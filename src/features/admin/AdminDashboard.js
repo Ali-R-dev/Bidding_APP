@@ -8,7 +8,7 @@ export default function AdminDashboard() {
     ]
     return (
         <div>
-            <h2 className="m-auto text-center">Admin Dashboard</h2>
+            <h4 className=" h4 m-auto text-center">Admin Dashboard</h4>
             <div>
                 <Table bordered hover>
                     <thead>
@@ -16,7 +16,7 @@ export default function AdminDashboard() {
                             <th>#</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Price</th>
+                            <th>Current Bid</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
                                 <td>
                                     <Stack direction='horizontal' gap={2}>
                                         <Button>Detail</Button>
-                                        <Button>Del</Button>
+                                        <Button variant='danger'>Del</Button>
                                     </Stack>
                                 </td>
                             </tr>
