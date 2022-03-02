@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Layout from './components/Layout'
 import LoginPage from './features/login/LoginPage'
 import AdminDashboard from './features/admin/AdminDashboard'
@@ -6,38 +6,46 @@ import AdminItemPage from './features/admin/AdminItemPage'
 import UserHomePage from './features/user/UserHomePage'
 import UserItemPage from './features/user/UserItemPage'
 import NotFound from './components/NotFound'
-// import ProtectedRoute from './components/ProtectedRoute'
-import { useState } from "react";
-function App() {
-  const [userId, setUserId] = useState("abc")
+import { useAuth } from './Contexts/AuthContext'
 
-  const isAuth = () => {
-    if (!userId) return false;
-    return true;
-  }
+function App() {
+  const { isAuth, credentials } = useAuth();
 
   return (
     <div className="App">
-      <Layout>
-        <BrowserRouter>
+      <BrowserRouter>
+        <Layout>
           <Routes>
 
+            {/* ---Login route--- */}
             <Route path={"/"} exact={true} element={<LoginPage />} />
 
-            <Route path={"/items"} exact={true} element={<UserHomePage />} />
+            <Route path={"/items/:id"} exact={true} element={
+              isAuth() && credentials.role === "regular" ? <UserItemPage /> : <LoginPage />
+            } />
 
-            <Route path={"/items/:id"} exact={true} element={<UserItemPage />} />
+            {/* ---regular user routes--- */}
+            <Route path={"/items"} exact={true} element={
+              isAuth() && credentials.role === "regular" ? <UserHomePage /> : <LoginPage />
+            } />
 
-            <Route path={"/dashboard"} exact={true} element={<AdminDashboard />} />
+            <Route path={"/dashboard/:id"} exact={true} element={
+              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
+            } />
 
-            <Route path={"/dashboard/:id"} exact={true} element={<AdminItemPage />} />
-            {/* ---Not found Routes--- */}
+            {/* ---admin routes--- */}
+            <Route path={"/dashboard"} exact={true} element={
+              isAuth() && credentials.role === "admin" ? <AdminDashboard /> : <LoginPage />
+            } />
+            <Route path={"/dashboard/new"} exact={true} element={
+              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
+            } />
 
-            {/* <Route path={"*"} element={<NotFound />} /> */}
+            <Route path={"*"} element={<NotFound />} />
 
           </Routes>
-        </BrowserRouter>
-      </Layout>
+        </Layout>
+      </BrowserRouter>
     </div>
   );
 }

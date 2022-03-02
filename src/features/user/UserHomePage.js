@@ -1,60 +1,74 @@
-import React from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import ItemCard from '../../components/ItemCard'
+import { Button, Stack, InputGroup, FormControl } from 'react-bootstrap'
+import { PaginationComp } from '../../components/Pagination'
+
+import { GetItems } from '../../services/itemService'
+import { useAuth } from '../../Contexts/AuthContext'
+
+
 export default function UserHomePage() {
-    const data = [
-        {
-            name: "name 1",
-            description: "description 1",
-            amount: 200,
-            bidEndsAt: Date.now().toString()
-        },
-        {
-            name: "name 2",
-            description: "description 2",
-            amount: 200,
-            bidEndsAt: Date.now().toString()
-        }, {
-            name: "name 3",
-            description: "description 3",
-            amount: 300,
-            bidEndsAt: Date.now().toString()
-        },
-        {
-            name: "name 4",
-            description: "description 4",
-            amount: 400,
-            bidEndsAt: Date.now().toString()
-        },
-        {
-            name: "name 5",
-            description: "description 5",
-            amount: 500,
-            bidEndsAt: Date.now().toString()
-        }
-    ]
+
+    const [items, SetItems] = useState([]);
+    const [pageInfo, setPageInfo] = useState({ current: 0, total: 0 })
+    const { credentials, setPageTitle } = useAuth();
+
+    const searchRef = useRef()
+
+    const handleSearch = () => {
+        fetchData()
+    }
+
+    const fetchData = async (page) => {
+        const search = searchRef.current.value.trim();
+        const res = await GetItems({ id: credentials.id, role: credentials.role }, { page, search })
+            .then(
+                res => {
+                    SetItems([...res[0]]);
+                    setPageInfo({ ...res[1] })
+                }
+            );
+    }
+
+    useEffect(async () => {
+        setPageTitle('Home')
+        await fetchData()
+    }, [])
+
     return (
         <div>
-            <div className='h5 text-center m-3'>User home</div>
-
-            <div className="form-group row m-4">
-                <div className="col-xs-4">
-                    <label>Search</label>
-                    <input type='text' className="form-control" />
-                </div>
-
+            {false && <div className="alert alert-warning text-center m-1" role="alert">
+                This is a warning alert—check it out!
+            </div>}
+            <div className='ms-auto me-auto mt-4 col-sm-8' >
+                <InputGroup className="mb-3">
+                    <FormControl
+                        ref={searchRef}
+                        placeholder="Search by name or description"
+                        aria-label="Search by name or description"
+                        aria-describedby="basic-addon2"
+                    />
+                    <Button variant="primary" id="button-addon2" onClick={handleSearch}>
+                        Button
+                    </Button>
+                </InputGroup>
             </div>
 
-            <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))",
-                gap: "1rem",
-                alignItems: "flex-start"
-            }}>
-                {data.map((item, index) => {
-                    return <ItemCard key={index} {...item} />
+            <div
+            // style={{
+            //     display: "grid",
+            //     gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))",
+            //     gap: "1rem",
+            //     alignItems: "flex-start"
+            // }}
+            >
+                {items?.map((item) => {
+                    return <ItemCard key={item._id} {...item} />
                 })}
             </div>
-
+            <div className='col-sm-8 ms-auto me-auto mt-2'>
+                <PaginationComp current={pageInfo.current} total={pageInfo.total} handlePagechange={fetchData} />
+            </div>
         </div>
     )
 }

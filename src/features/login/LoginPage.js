@@ -1,39 +1,145 @@
-import React from 'react'
-import { Card, Form, Stack, Button } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react'
+import { Card, Form, Stack, Button, Radio } from 'react-bootstrap'
+import { Navigate } from 'react-router-dom'
+import io, { Socket } from 'socket.io-client'
+import { useAuth } from '../../Contexts/AuthContext'
+
+const socket = io.connect('http://localhost:3001/')
 export default function LoginPage() {
+
+    const admins = [
+        { id: "adm1", role: "admin" },
+        { id: "adm2", role: "admin" }
+    ]
+    const regulars = [
+        { id: "usr1", role: "regular" },
+        { id: "usr2", role: "regular" },
+        { id: "usr3", role: "regular" }
+    ]
+
+
+    const { setAuth, isAuth, credentials, setPageTitle } = useAuth();
+    const [user, setUser] = useState({ id: '', role: '' })
+
+    useEffect(() => {
+        setPageTitle('')
+        socket.on('message', (msg) => {
+            console.log(msg)
+        })
+    }, [])
+
+    if (isAuth()) {
+        if (credentials.role === "admin") return (<Navigate to="/dashboard" />)
+        return (<Navigate to="/items" />)
+    }
+
+    const handleSetUser = (e) => {
+        setUser({ ...user, [e.target.name]: e.target.value })
+    }
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const res = await setAuth(user)
+        if (res === undefined) alert("unauthorized")
+    }
+
+
+
+    const testSubmit1 = (Id, Role) => {
+        setUser({ id: Id, role: Role })
+
+    }
+    const testSubmit2 = async () => {
+        await setAuth(user)
+    }
+
     return (
         <>
-            <div className='my-4 col-sm-8 m-auto'>
+            <div className='col-sm-6 m-auto mt-5'>
                 <Card>
                     <Card.Body>
-                        <Card.Title className='align-items-baseline mb-3 me-auto'>
+                        <Card.Title className='align-items-baseline me-auto'>
                             <h5 className='text-center'>LOG IN</h5>
                         </Card.Title>
-                        <Form className='row'>
+                        <Form className='row' onSubmit={handleSubmit}>
 
-                            <Form.Group className="mb-3" controlId="frmUserName">
-                                <Form.Label>Name</Form.Label>
-                                <Form.Control type="text" placeholder="User name" />
+
+                            <Form.Group className="sm-4 m-auto" controlId="frmId">
+                                <Form.Label>ID : </Form.Label>
+
+                                <Form.Control required type="password" name='id' onChange={handleSetUser} placeholder="User ID" />
                             </Form.Group>
 
-                            <Form.Group className="mb-3" controlId="frmPass">
-                                <Form.Label>Name</Form.Label>
-                                <Form.Control type="password" placeholder="Password" />
-                                <div className='span text-center text-muted'><a href='#'>Forgotton Password</a></div>
+                            <Form.Group className="sm-4 m-auto mt-2" >
+                                <span>Role : </span>
+                                <Stack direction='horizontal' gap={4} className=''>
+                                    <div>
+                                        <Form.Check
+                                            inline
+                                            id="admin"
+                                            value="admin"
+                                            onChange={handleSetUser}
+                                            type='radio'
+                                            name="role" />
+                                        <Form.Check.Label
+                                            htmlFor="admin">
+                                            {'Admin'}
+                                        </Form.Check.Label>
+                                    </div>
+                                    <div>
+                                        <Form.Check
+                                            required
+                                            inline
+                                            id="regular"
+                                            value="regular"
+                                            onChange={handleSetUser}
+                                            type='radio'
+                                            name="role" />
+                                        <Form.Check.Label
+                                            htmlFor="regular">
+                                            {'Regular'}
+                                        </Form.Check.Label>
+                                    </div>
+                                </Stack>
                             </Form.Group>
-                        </Form>
-                        <Stack direction='horizontal' gap={2}>
-
-                            <div className="form-check ms-auto">
-                                <input className="form-check-input" type="checkbox" id="flexCheck" />
-                                <label className="form-check-label" for="flexCheck">
-                                    keep sign in
-                                </label>
+                            <div className='text-center m-2'>
+                                <Button className='' type='submit'>Log in</Button>
                             </div>
-                            <Button className='me-auto'>Log in</Button>
-                        </Stack>
+                        </Form>
+
                     </Card.Body>
                 </Card>
+            </div>
+            <div>
+                <h1>Admins</h1>
+                {admins.map((admin) => {
+                    const { id, role } = admin
+                    return (
+                        <div key={id} className="m-2">
+                            <Button
+                                onClick={async () => {
+                                    await testSubmit1(id, role)
+                                    await testSubmit2()
+                                }}>
+                                {id}</Button>
+                        </div>
+                    )
+                })}
+
+                <h1>Regulars</h1>
+
+                {regulars.map((reg) => {
+                    const { id, role } = reg
+                    return (
+                        <div key={id} className="m-2">
+                            <Button
+                                onClick={async () => {
+                                    await testSubmit1(id, role)
+                                    await testSubmit2()
+                                }}
+                            >{id}</Button>
+                        </div>
+                    )
+                })}
             </div>
         </>
     )

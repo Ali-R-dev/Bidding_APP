@@ -1,19 +1,26 @@
 import React from 'react'
-import { Card } from 'react-bootstrap'
-
-export default function ItemCard({ name, description, amount, bidEndsAt }) {
+import { Card, Button, Stack } from 'react-bootstrap'
+import { Link } from "react-router-dom";
+export default function ItemCard({ _id, name, description, basePrice, auctionEndsAt, currentBid }) {
     return (
         <div>
-            <Card>
+            <Card className='m-2'>
                 <Card.Body>
                     <Card.Title className='justify-content-between align-items-baseline mb-3'>
-                        <a className='span'>{name || ''}</a>
+                        <Stack direction='horizontal'>
+                            <span className='display-6 me-auto'>{name}</span>
+                            <div className='span text-muted'>{new Date(auctionEndsAt).toLocaleString() || '00:00'}</div>
+                        </Stack>
                     </Card.Title>
-                    <div>{description || ''}</div>
-                    <div>{bidEndsAt || '00:00'}</div>
-                    <div>Bid price : {amount || 0}</div>
+                    <div className='span text-muted'>Bid price : {Math.max(basePrice, currentBid?.price)}</div>
+                    <div className='span text-muted'>{description}</div>
+                    <div className='my-2'>
+                        <Link to={`/items/${_id}`}>
+                            <Button variant='primary'>Bid Now</Button>
+                        </Link>
+                    </div>
                 </Card.Body>
             </Card>
-        </div>
+        </div >
     )
 }
