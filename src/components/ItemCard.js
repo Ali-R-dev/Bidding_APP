@@ -8,7 +8,7 @@ export default function ItemCard({ _id, name, description, basePrice, auctionEnd
                 <Card.Body>
                     <Card.Title className='justify-content-between align-items-baseline mb-3'>
                         <Stack direction='horizontal'>
-                            <span className='display-6 me-auto'>{name}</span>
+                            <span className='h4 me-auto'>{name}</span>
                             <div className='span text-muted'>{new Date(auctionEndsAt).toLocaleString() || '00:00'}</div>
                         </Stack>
                     </Card.Title>

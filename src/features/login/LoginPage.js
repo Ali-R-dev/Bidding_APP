@@ -3,6 +3,7 @@ import { Card, Form, Stack, Button, Radio } from 'react-bootstrap'
 import { Navigate } from 'react-router-dom'
 import io, { Socket } from 'socket.io-client'
 import { useAuth } from '../../Contexts/AuthContext'
+import swal from 'sweetalert'
 
 const socket = io.connect('http://localhost:3001/')
 export default function LoginPage() {
@@ -39,18 +40,18 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         const res = await setAuth(user)
-        if (res === undefined) alert("unauthorized")
+        if (res === undefined) swal("unauthorized")
     }
 
 
 
-    const testSubmit1 = (Id, Role) => {
-        setUser({ id: Id, role: Role })
+    // const testSubmit1 = (Id, Role) => {
+    //     setUser({ id: Id, role: Role })
 
-    }
-    const testSubmit2 = async () => {
-        await setAuth(user)
-    }
+    // }
+    // const testSubmit2 = async () => {
+    //     await setAuth(user)
+    // }
 
     return (
         <>
@@ -109,7 +110,10 @@ export default function LoginPage() {
                     </Card.Body>
                 </Card>
             </div>
-            <div>
+
+
+            {/* ---for using while dev--- */}
+            {/* <div>
                 <h1>Admins</h1>
                 {admins.map((admin) => {
                     const { id, role } = admin
@@ -140,7 +144,7 @@ export default function LoginPage() {
                         </div>
                     )
                 })}
-            </div>
+            </div> */}
         </>
     )
 }

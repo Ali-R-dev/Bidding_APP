@@ -5,9 +5,8 @@ const BotConfig = ({ show, handleClose, credentials }) => {
 
     const [Bot, setBot] = useState({ maxBalance: 0, notifyAt: 0 })
 
-
+    // ---fetch data from server
     const fetchBotData = async () => {
-
         const result = await getBotByUserId(credentials)
         if (result !== undefined) {
             const bot = { maxBalance: result.maxBalance, notifyAt: result.notifyAt }
@@ -18,6 +17,7 @@ const BotConfig = ({ show, handleClose, credentials }) => {
     useEffect(async () => {
         await fetchBotData();
     }, [show])
+
 
     const handleValueChange = (e) => {
         setBot(
@@ -32,6 +32,7 @@ const BotConfig = ({ show, handleClose, credentials }) => {
         await updateBot(Bot, credentials).then(
             async () => {
                 await fetchBotData();
+                handleClose()
             },
             rej => {
                 console.log("rejected");
@@ -46,10 +47,6 @@ const BotConfig = ({ show, handleClose, credentials }) => {
                     <Modal.Title>Config AutoBidder</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-
-                    {true && <div className="alert alert-warning text-center m-1" role="alert">
-                        This is a warning alert—check it out!
-                    </div>}
 
                     <Form onSubmit={handleSubmit}>
                         <Stack direction={"vertical"} gap={2}>

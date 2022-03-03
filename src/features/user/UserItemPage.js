@@ -65,7 +65,7 @@ export default function UserItemPage(props) {
 
     useEffect(async () => {
 
-        setPageTitle('Item detail')
+        setPageTitle('Item')
 
         if (itemId) {
             await GetItemById(itemId, { id: credentials.id, role: credentials.role }).then(res => {

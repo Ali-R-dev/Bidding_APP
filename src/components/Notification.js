@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { Modal, Button, Stack } from 'react-bootstrap'
 import { getBotByUserId, updateBot } from '../services/itemService'
 
-const Notification = ({ show, handleClose, credentials }) => {
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons'
+
+const Notification = ({ show, handleClose, credentials, updateNoOfNotify }) => {
 
     const [NoticeList, setNoticeList] = useState([])
 
@@ -11,8 +14,9 @@ const Notification = ({ show, handleClose, credentials }) => {
 
         const result = await getBotByUserId(credentials)
         if (result !== undefined) {
-            let notice = { notifications: result.notifications }
-            setNoticeList([...notice])
+
+            setNoticeList(result.notifications)
+            updateNoOfNotify(result.notifications.length)
         }
     }
 
@@ -31,21 +35,26 @@ const Notification = ({ show, handleClose, credentials }) => {
     }
     return (
         <>
-
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Stack direction={"horizontal"} gap={2}>
+                    <Stack direction={"horizontal"} gap={5}>
                         <Modal.Title>Notifications</Modal.Title>
-                        <Button onclick={handleClear}>clear</Button>
+                        <Button onClick={handleClear}>
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                        </Button>
                     </Stack>
                 </Modal.Header>
                 <Modal.Body>
 
-                    <Stack direction={"vertical"} gap={2}>
+                    <Stack direction={"vertical"} gap={1}>
 
-                        {NoticeList?.map((notice, index) => {
-                            <div key={index} className="alert m-1" role="alert">
-                                {notice}
+                        {NoticeList?.map((note, index) => {
+                            let classes = ['alert']
+                            if (note.typeCode == 0) classes.push('alert-primary')
+                            if (note.typeCode == 1) classes.push('alert-danger')
+                            if (note.typeCode == 2) classes.push('alert-warning ')
+                            return <div key={index} className={classes.join(' ')} role="alert" >
+                                {note.message}
                             </div>
 
                         })}

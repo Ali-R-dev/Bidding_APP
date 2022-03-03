@@ -33,7 +33,9 @@ export const AuthProvider = ({ children }) => {
     const setAuth = async (userObj) => {
         try {
             const cred = await loginProvider(userObj)
-            setCredentials(cred)
+            const { id, role } = cred;
+            if (id && role)
+                setCredentials(cred)
             return true;
         } catch (error) {
             return undefined
