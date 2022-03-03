@@ -8,15 +8,17 @@ import swal from 'sweetalert'
 const socket = io.connect('http://localhost:3001/')
 export default function LoginPage() {
 
-    const admins = [
-        { id: "adm1", role: "admin" },
-        { id: "adm2", role: "admin" }
-    ]
-    const regulars = [
-        { id: "usr1", role: "regular" },
-        { id: "usr2", role: "regular" },
-        { id: "usr3", role: "regular" }
-    ]
+
+    // --- for using while dev---
+    // const admins = [
+    //     { id: "adm1", role: "admin" },
+    //     { id: "adm2", role: "admin" }
+    // ]
+    // const regulars = [
+    //     { id: "usr1", role: "regular" },
+    //     { id: "usr2", role: "regular" },
+    //     { id: "usr3", role: "regular" }
+    // ]
 
 
     const { setAuth, isAuth, credentials, setPageTitle } = useAuth();
