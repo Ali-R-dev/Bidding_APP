@@ -20,20 +20,23 @@ function App() {
             {/* ---Login route--- */}
             <Route path={"/"} exact={true} element={<LoginPage />} />
 
+            {/* ---regular user routes--- */}
+
             <Route path={"/items/:id"} exact={true} element={
               isAuth() && credentials.role === "regular" ? <UserItemPage /> : <LoginPage />
             } />
 
-            {/* ---regular user routes--- */}
+
             <Route path={"/items"} exact={true} element={
               isAuth() && credentials.role === "regular" ? <UserHomePage /> : <LoginPage />
             } />
+
+            {/* ---admin routes--- */}
 
             <Route path={"/dashboard/:id"} exact={true} element={
               isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
             } />
 
-            {/* ---admin routes--- */}
             <Route path={"/dashboard"} exact={true} element={
               isAuth() && credentials.role === "admin" ? <AdminDashboard /> : <LoginPage />
             } />
