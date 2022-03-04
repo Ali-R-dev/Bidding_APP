@@ -78,8 +78,8 @@ export default function AdminDashboard() {
                     <InputGroup className="mb-3">
                         <FormControl
                             ref={searchRef}
-                            placeholder="Recipient's username"
-                            aria-label="Recipient's username"
+                            placeholder="Search By name or description"
+                            aria-label="Search By name or description"
                             aria-describedby="basic-addon2"
                         />
                         <Button variant="primary" id="button-addon2" onClick={handleSearch}>
