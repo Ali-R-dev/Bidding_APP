@@ -1,6 +1,8 @@
 import React from 'react'
 import { Card, Button, Stack } from 'react-bootstrap'
 import { Link } from "react-router-dom";
+import { CountDownTimer } from './CountDownTimer'
+
 export default function ItemCard({ _id, name, description, basePrice, auctionEndsAt, currentBid }) {
     return (
         <div>
@@ -9,7 +11,7 @@ export default function ItemCard({ _id, name, description, basePrice, auctionEnd
                     <Card.Title className='justify-content-between align-items-baseline mb-3'>
                         <Stack direction='horizontal'>
                             <span className='h4 me-auto'>{name}</span>
-                            <div className='span text-muted'>{new Date(auctionEndsAt).toLocaleString() || '00:00'}</div>
+                            <CountDownTimer EndTime={auctionEndsAt} />
                         </Stack>
                     </Card.Title>
                     <div className='span text-muted'>Bid price : {Math.max(basePrice, currentBid?.price)}</div>

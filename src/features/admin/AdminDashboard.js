@@ -110,6 +110,7 @@ export default function AdminDashboard() {
                             <th>Name</th>
                             <th>Description</th>
                             <th>Base Price</th>
+                            <th>Current Bid</th>
                             <th>Auction Ends At</th>
                             <th>Actions</th>
                         </tr>
@@ -121,6 +122,7 @@ export default function AdminDashboard() {
                                 <td>{item?.name || ""}</td>
                                 <td>{item?.description || ""}</td>
                                 <td>{item?.basePrice || ""}</td>
+                                <td>{item?.currentBid.price || ""}</td>
                                 <td>{new Date(item.auctionEndsAt).toLocaleString() || ""}</td>
                                 <td>
                                     <Stack direction='horizontal' gap={1}>
@@ -129,7 +131,12 @@ export default function AdminDashboard() {
                                             to={{
                                                 pathname: `/dashboard/${item._id}`
                                             }}
-                                        ><Button><FontAwesomeIcon icon={faAnglesRight} /></Button></Link>
+                                        >
+                                            <Button>
+                                                <FontAwesomeIcon icon={faAnglesRight} />
+                                            </Button>
+                                        </Link>
+
                                         <Button variant='danger' onClick={() => handleDelete(item._id)}><FontAwesomeIcon icon={faTrash} /></Button>
                                     </Stack>
                                 </td>

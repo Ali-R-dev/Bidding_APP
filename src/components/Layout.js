@@ -17,8 +17,6 @@ const Layout = (props) => {
     const [NoticeModal, setNoticeModal] = useState(false)
     const [noOfNotify, setNoOfNotify] = useState(0)
 
-    const location = useLocation();
-    console.log(location.pathname);
 
     const handleLogOut = () => {
         logOut();
@@ -50,7 +48,7 @@ const Layout = (props) => {
                 <nav className="navbar navbar-light bg-light text-center sm-4" >
                     <div className="container-fluid">
                         <Link className="navbar-brand" to='/'>BIDDING APP</Link>
-                        <span className='display-6'>{headerTitle}</span>
+                        <span className='h1-6'>{headerTitle}</span>
 
                         {credentials.id && <Stack direction="horizontal" gap={2}>
 
