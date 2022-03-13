@@ -9,7 +9,7 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
 
     const defaultCredentials = {
-        id: '', role: ''
+        role: "", userId: '', userName: ''
     }
 
     const [credentials, setCredentials] = useState(() => {
@@ -31,10 +31,11 @@ export const AuthProvider = ({ children }) => {
 
 
     const setAuth = async (userObj) => {
+
         try {
             const cred = await loginProvider(userObj)
-            const { id, role } = cred;
-            if (id && role)
+            const { userId, role, userName } = cred;
+            if (userId && role && userName)
                 setCredentials(cred)
             return true;
         } catch (error) {
@@ -42,11 +43,11 @@ export const AuthProvider = ({ children }) => {
         }
     }
     const logOut = () => {
-        setCredentials({ id: "", role: "" })
+        setCredentials({ role: "", userId: '', userName: '' })
     }
 
     const isAuth = () => {
-        return credentials.id == "" && credentials.role == "" ? false : true;
+        return credentials.userId == "" && credentials.role == "" ? false : true;
     }
     const setPageTitle = (title) => {
         setHEaderTitle(title)

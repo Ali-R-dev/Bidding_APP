@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { Button, Stack, Container, ButtonGroup, DropdownButton, Dropdown } from 'react-bootstrap'
 import { useAuth } from '../Contexts/AuthContext'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import BotConfig from './BotConfig'
-import Notification from './Notification'
+// import BotConfig from './BotConfig'
+// import Notification from './Notification'
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faGear, faBell } from '@fortawesome/free-solid-svg-icons'
@@ -13,9 +13,9 @@ const Layout = (props) => {
     const navigate = useNavigate()
 
     const { isAuth, logOut, credentials, headerTitle } = useAuth();
-    const [ConfigModal, setConfigModal] = useState(false)
-    const [NoticeModal, setNoticeModal] = useState(false)
-    const [noOfNotify, setNoOfNotify] = useState(0)
+    // const [ConfigModal, setConfigModal] = useState(false)
+    // const [NoticeModal, setNoticeModal] = useState(false)
+    // const [noOfNotify, setNoOfNotify] = useState(0)
 
 
     const handleLogOut = () => {
@@ -23,26 +23,26 @@ const Layout = (props) => {
         navigate("/")
     }
 
-    const HideConfigModal = () => {
-        setConfigModal(false)
-    }
-    const ShowConfigModal = () => {
-        setConfigModal(prev => true)
-    }
+    // const HideConfigModal = () => {
+    //     setConfigModal(false)
+    // }
+    // const ShowConfigModal = () => {
+    //     setConfigModal(prev => true)
+    // }
 
-    const HideNoticeModal = () => {
-        setNoticeModal(false)
-    }
-    const ShowNoticeModal = () => {
-        setNoticeModal(prev => true)
-    }
-    const updateNoOfNotify = (no) => {
-        setNoOfNotify(no)
-    }
+    // const HideNoticeModal = () => {
+    //     setNoticeModal(false)
+    // }
+    // const ShowNoticeModal = () => {
+    //     setNoticeModal(prev => true)
+    // }
+    // const updateNoOfNotify = (no) => {
+    //     setNoOfNotify(no)
+    // }
 
     return (
         <>
-            {isAuth() && credentials.role === 'regular' && <BotConfig show={ConfigModal} handleClose={HideConfigModal} credentials={credentials} />}
+            {/* {isAuth() && credentials.role === 'regular' && <BotConfig show={ConfigModal} handleClose={HideConfigModal} credentials={credentials} />} */}
 
             <Container className='my-4'>
                 <nav className="navbar navbar-light bg-light text-center sm-4" >
@@ -52,13 +52,14 @@ const Layout = (props) => {
 
                         {credentials.id && <Stack direction="horizontal" gap={2}>
 
-                            {credentials.role == 'regular' &&
+                            {/* {credentials.role == 'REG' &&
 
                                 <>
                                     <Button
                                         variant='outline-secondary'
                                         className='position-relative'
-                                        onClick={ShowNoticeModal}>
+                                    onClick={ShowNoticeModal}
+                                    >
                                         <FontAwesomeIcon icon={faBell} />
                                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{noOfNotify > 0 ? "" + noOfNotify : ''}</span>
                                     </Button>
@@ -68,7 +69,7 @@ const Layout = (props) => {
                                         handleClose={HideNoticeModal}
                                         credentials={credentials} />
                                 </>
-                            }
+                            } */}
                             <ButtonGroup>
                                 <DropdownButton
                                     variant='outline-secondary'
@@ -76,10 +77,10 @@ const Layout = (props) => {
                                     align="end"
                                     title={credentials.userName} id="bg-nested-dropdown">
 
-                                    {credentials.role == 'regular' && <Dropdown.Item eventKey="1" onClick={ShowConfigModal}>
+                                    {/* {credentials.role == 'REG' && <Dropdown.Item eventKey="1" onClick={ShowConfigModal}>
                                         <span className='span me-2' >Autobidder</span>
                                         <FontAwesomeIcon icon={faGear} />
-                                    </Dropdown.Item>}
+                                    </Dropdown.Item>} */}
 
                                     <Dropdown.Item
                                         eventKey="2"
