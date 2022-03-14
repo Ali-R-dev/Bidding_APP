@@ -28,11 +28,11 @@ export const CountDownTimer = ({ EndTime }) => {
 
     return (
         <>
-            <Stack direction="horizontal" gap={2} className="text-muted">
-                <div>days:{timer.days}</div>
-                <div>hours:{timer.hours}</div>
-                <div>minits:{timer.minits}</div>
-                <div>seconds:{timer.sec}</div>
+            <Stack direction="horizontal" gap={1} className="text-muted">
+                <span>{timer.days || '00'}</span>
+                <span>: {timer.hours || '00'}</span>
+                <span>: {timer.minits || '00'}</span>
+                <span>: {timer.sec || '00'}</span>
             </Stack>
         </>
     )

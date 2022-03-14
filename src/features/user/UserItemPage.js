@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button, Card, Stack } from 'react-bootstrap'
+import { CountDownTimer } from '../../components/CountDownTimer'
 import { GetItemById, BidOnItem, AutoBidToogle, getBotByUserId, updateBot } from '../../services/itemService'
 import { useAuth } from '../../Contexts/AuthContext'
 import { useNavigate } from "react-router-dom";
@@ -23,30 +24,29 @@ export default function UserItemPage(props) {
 
     const handleBidNow = async () => {
 
-        if (checkBox == true) {
-            await AutoBidToogle(Item._id, checkBox, credentials).then(
-                (res) => {
-                    swal("Autobidder is On", { icon: "success" })
-                    navigate('/items')
+        // if (checkBox == true) {
+        //     await AutoBidToogle(Item._id, checkBox, credentials).then(
+        //         (res) => {
+        //             swal("Autobidder is On", { icon: "success" })
+        //             navigate('/items')
 
-                },
-                (rej) => {
-                    swal("cannot Perform Bid", { icon: "error" })
-                }
-            )
-            return;
-        }
+        //         },
+        //         (rej) => {
+        //             swal("cannot Perform Bid", { icon: "error" })
+        //         }
+        //     )
+        //     return;
+        // }
         // turn off autobidder for this item
-        await AutoBidToogle(Item._id, checkBox, credentials)
+        // await AutoBidToogle(Item._id, checkBox, credentials)
 
         const newBidAmount = bidAmountRef?.current?.value
 
         // --- checks before bid---
-        if (Item?.currentBid?.bidderId === credentials.id) return swal("cannot Perform Bid", "you Alrady have highest bid", { icon: "error" })
 
-        if (new Date().toUTCString() > new Date(Item.auctionEndsAt).toUTCString()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
+        if (new Date().toUTCString() > new Date(Item.auctoniEndsAt).toUTCString()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
 
-        if (newBidAmount <= Item?.basePrice || newBidAmount <= Item?.currentBid?.price) return swal("cannot Perform Bid", "Please bid with higher amount", { icon: "error" })
+        if (newBidAmount <= Item?.basePrice || newBidAmount <= 0) return swal("cannot Perform Bid", "Please bid with higher amount", { icon: "error" })
 
         // ---bidding---
         await BidOnItem(itemId, newBidAmount, credentials).then(
@@ -68,24 +68,25 @@ export default function UserItemPage(props) {
         setPageTitle('Item')
 
         if (itemId) {
-            await GetItemById(itemId, { id: credentials.id, role: credentials.role }).then(res => {
-                const { __v, ...itemObj } = res;
-                setItem(itemObj)
-            },
-                () => navigate('*')
+            await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(
+                (res) => {
+                    const { __v, ...itemObj } = res;
+                    setItem(itemObj)
+                },
+                (rej) => console.log(rej)
             );
-            await getBotByUserId(credentials).then(
-                res => {
-                    const status = res.ItemIdsForAutoBid.findIndex((id) => id == itemId)
-                    if (status !== -1) {
-                        setCheckBox(prev => true)
-                    } else {
-                        setCheckBox(prev => false)
-                    }
-                    // const status = Object.values(res.ItemIdsForAutoBid).map(function (key) { return res.ItemIdsForAutoBid[key]; })
-                    // console.log(status);
-                }
-            );
+            // await getBotByUserId(credentials).then(
+            //     res => {
+            //         const status = res.ItemIdsForAutoBid.findIndex((id) => id == itemId)
+            //         if (status !== -1) {
+            //             setCheckBox(prev => true)
+            //         } else {
+            //             setCheckBox(prev => false)
+            //         }
+            //         // const status = Object.values(res.ItemIdsForAutoBid).map(function (key) { return res.ItemIdsForAutoBid[key]; })
+            //         // console.log(status);
+            //     }
+            // );
         }
     }, [])
     return (
@@ -97,7 +98,7 @@ export default function UserItemPage(props) {
                             <Stack direction='horizontal' gap={2}>
 
                                 <h5 className='display-6 me-auto'>{Item?.name}</h5>
-                                <div>{new Date(Item?.auctionEndsAt).toLocaleString()}</div>
+                                <CountDownTimer EndTime={Item.auctoniEndsAt} />
 
                             </Stack>
 

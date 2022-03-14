@@ -28,29 +28,29 @@ function App() {
 
             {/* ---regular user routes--- */}
 
-            {/* <Route path={"/items/:id"} exact={true} element={
-              isAuth() && credentials.role === "regular" ? <UserItemPage /> : <LoginPage />
-            } /> */}
+            <Route path={"/items/:id"} exact={true} element={
+              isAuth() && credentials.role === "REG" ? <UserItemPage /> : <LoginPage />
+            } />
 
 
-            {/* <Route path={"/items"} exact={true} element={
-              isAuth() && credentials.role === "regular" ? <UserHomePage /> : <LoginPage />
-            } /> */}
+            <Route path={"/items"} exact={true} element={
+              isAuth() && credentials.role === "REG" ? <UserHomePage /> : <LoginPage />
+            } />
 
             {/* ---admin routes--- */}
 
-            {/* <Route path={"/dashboard/:id"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
-            } /> */}
-
-            {/* <Route path={"/dashboard"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminDashboard /> : <LoginPage />
+            <Route path={"/dashboard/:id"} exact={true} element={
+              isAuth() && credentials.role === "ADM" ? <AdminItemPage /> : <LoginPage />
             } />
-             */}
 
-            {/* <Route path={"/dashboard/new"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
-            } /> */}
+            <Route path={"/dashboard"} exact={true} element={
+              isAuth() && credentials.role === "ADM" ? <AdminDashboard /> : <LoginPage />
+            } />
+
+
+            <Route path={"/dashboard/new"} exact={true} element={
+              isAuth() && credentials.role === "ADM" ? <AdminItemPage /> : <LoginPage />
+            } />
 
             <Route path={"*"} element={<NotFound />} />
 

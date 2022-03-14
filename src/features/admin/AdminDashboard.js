@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
         const search = searchRef.current.value.trim();
 
-        const res = await GetItems({ id: credentials.id, role: credentials.role }, { page, search }).then(
+        const res = await GetItems({ userId: credentials.userId, role: credentials.role }, { page, search }).then(
             res => {
                 SetItems([...res[0]])
                 setPageInfo({ ...res[1] })
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
                                 <td>{item?.name || ""}</td>
                                 <td>{item?.description || ""}</td>
                                 <td>{item?.basePrice || ""}</td>
-                                <td>{item?.currentBid.price || ""}</td>
+                                <td>{item?.currentBid || ""}</td>
                                 <td>{new Date(item.auctionEndsAt).toLocaleString() || ""}</td>
                                 <td>
                                     <Stack direction='horizontal' gap={1}>
