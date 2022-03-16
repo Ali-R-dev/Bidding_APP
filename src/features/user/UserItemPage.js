@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Button, Card, Stack } from 'react-bootstrap'
+import { Button, Card, Stack, Table } from 'react-bootstrap'
 import { CountDownTimer } from '../../components/CountDownTimer'
-import { GetItemById, BidOnItem, AutoBidToogle, getBotByUserId, updateBot } from '../../services/itemService'
+import { GetItemById, BidOnItem, getBidsByItemId } from '../../services/itemService'
+import io, { Socket } from 'socket.io-client'
 import { useAuth } from '../../Contexts/AuthContext'
 import { useNavigate } from "react-router-dom";
 
@@ -11,40 +12,31 @@ import { faFloppyDisk, faAngleLeft } from '@fortawesome/free-solid-svg-icons'
 
 import swal from 'sweetalert'
 
+const socket = io.connect('http://localhost:3001/')
+
 export default function UserItemPage(props) {
 
     const navigate = useNavigate();
 
     const [Item, setItem] = useState({})
+    const [Bids, setBids] = useState([])
+    const [CurrentBid, setCurrentBid] = useState({})
+    const [isLoading, setIsLoading] = useState(false)
     const [checkBox, setCheckBox] = useState(false)
 
     const { id: itemId } = useParams();
+
     const { credentials, setPageTitle } = useAuth();
+
     const bidAmountRef = useRef();
 
     const handleBidNow = async () => {
-
-        // if (checkBox == true) {
-        //     await AutoBidToogle(Item._id, checkBox, credentials).then(
-        //         (res) => {
-        //             swal("Autobidder is On", { icon: "success" })
-        //             navigate('/items')
-
-        //         },
-        //         (rej) => {
-        //             swal("cannot Perform Bid", { icon: "error" })
-        //         }
-        //     )
-        //     return;
-        // }
-        // turn off autobidder for this item
-        // await AutoBidToogle(Item._id, checkBox, credentials)
 
         const newBidAmount = bidAmountRef?.current?.value
 
         // --- checks before bid---
 
-        if (new Date().toUTCString() > new Date(Item.auctoniEndsAt).toUTCString()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
+        if (new Date().getTime() > new Date(Item.auctoniEndsAt).getTime()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
 
         if (newBidAmount <= Item?.basePrice || newBidAmount <= 0) return swal("cannot Perform Bid", "Please bid with higher amount", { icon: "error" })
 
@@ -63,50 +55,86 @@ export default function UserItemPage(props) {
         )
     }
 
+    const fethItem = async () => {
+
+        if (itemId) {
+            const result = await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(
+                (res) => res,
+                (rej) => { }
+            )
+            if (result) {
+                setItem(result)
+                await fetchBids(result);
+            }
+        }
+        return;
+    }
+
+    const fetchBids = async (item) => {
+
+        const bids = await getBidsByItemId(itemId, { userId: credentials.userId, role: credentials.role }).then(
+            (res) => res,
+            (rej) => []
+        )
+
+
+        const current = bids.filter(bid => String(bid._id) === String(item.currentBid))
+
+        setBids(prev => bids)
+
+        if (current.length) setCurrentBid(prev => current[0])
+
+
+        return;
+    }
+
+
     useEffect(async () => {
+
+        if (!itemId) navigate('*')
 
         setPageTitle('Item')
 
-        if (itemId) {
-            await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(
-                (res) => {
-                    const { __v, ...itemObj } = res;
-                    setItem(itemObj)
-                },
-                (rej) => console.log(rej)
-            );
-            // await getBotByUserId(credentials).then(
-            //     res => {
-            //         const status = res.ItemIdsForAutoBid.findIndex((id) => id == itemId)
-            //         if (status !== -1) {
-            //             setCheckBox(prev => true)
-            //         } else {
-            //             setCheckBox(prev => false)
-            //         }
-            //         // const status = Object.values(res.ItemIdsForAutoBid).map(function (key) { return res.ItemIdsForAutoBid[key]; })
-            //         // console.log(status);
-            //     }
-            // );
-        }
+        setIsLoading(true);
+        await fethItem()
+
+        setIsLoading(false);
+
+        socket.emit("init_update", ({
+            itemId: itemId
+        }));
+
+
     }, [])
+
     return (
         <>
+
             <div className='my-4 col-sm-10 mx-auto'>
-                <Card>
+
+                {isLoading &&
+                    <div className="d-flex justify-content-center my-4">
+                        <div className="spinner-border text-primary"
+                            style={{ width: "3rem", height: "3rem" }}
+                            role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+
+                {!isLoading && <Card>
                     <Card.Body>
+
                         <Card.Title className='align-items-baseline mb-3 me-auto'>
                             <Stack direction='horizontal' gap={2}>
-
                                 <h5 className='display-6 me-auto'>{Item?.name}</h5>
-                                <CountDownTimer EndTime={Item.auctoniEndsAt} />
 
+                                {Item?._id && <CountDownTimer EndTime={Item.auctionEndsAt} />
+                                }
                             </Stack>
-
                         </Card.Title>
 
-                        <div>Bid price :<strong> {
-                            Item?.currentBid?.price > Item?.basePrice ? Item?.currentBid?.price : Item?.basePrice
-                        } </strong> </div>
+                        <div>Bid price :<strong> {CurrentBid.bidPrice || Item.basePrice} </strong> </div>
 
                         <div>{Item?.description}</div>
 
@@ -120,7 +148,6 @@ export default function UserItemPage(props) {
                                     <FontAwesomeIcon icon={faAngleLeft} />
                                 </Button>
                             </Link>
-
                             <input
                                 type='checkbox'
                                 className='form-check-input ms-auto'
@@ -144,7 +171,46 @@ export default function UserItemPage(props) {
 
                         </Stack>
                     </Card.Body>
-                </Card>
+                </Card>}
+
+
+                {!isLoading && <Card>
+                    <Card.Body>
+                        <Card.Title className='align-items-baseline mb-3 me-auto'>
+                            <h6 className='text-center'>Bids</h6>
+                        </Card.Title>
+
+                        {/*  */}
+                        <Table bordered hover size="sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Bid</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Bids?.map((bid, index) => {
+                                    // if (String(bid._id) === String(Item.currentBid)) return;
+                                    return (
+                                        <tr key={bid._id} className={bid.userId == credentials.userId ? 'table-primary' : ''}>
+                                            <td>{bid.userId}</td>
+                                            <td>{bid.bidPrice}</td>
+                                            <td>{new Date(bid.createdAt).toLocaleString()}</td>
+                                        </tr>
+                                    )
+
+
+                                })}
+
+                            </tbody>
+                        </Table>
+                        {/*  */}
+
+                    </Card.Body>
+                </Card>}
+
+
             </div>
         </>
     )

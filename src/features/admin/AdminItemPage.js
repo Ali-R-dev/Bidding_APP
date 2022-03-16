@@ -30,7 +30,7 @@ export default function AdminItemPage(props) {
 
     const onSubmit = (itemObj) => {
         const Data = { ...itemObj, _id: "", adminId: credentials.userId }
-        console.log(Data);
+
         trigger().then(
             (res) => {
 
@@ -69,8 +69,8 @@ export default function AdminItemPage(props) {
         setPageTitle('Item Detail')
         if (itemId) {
             await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(res => {
-                const { __v, ...itemObj } = res;
-                reset({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toLocaleString() });
+
+                reset({ ...res, auctionEndsAt: new Date(res.auctionEndsAt).toLocaleString() });
             });
         }
     }, [])
@@ -154,7 +154,7 @@ export default function AdminItemPage(props) {
 
                                         valueAsDate: true,
                                         required: "Field is Required",
-                                        min: { value: Date.now(), message: "must be a future value" }
+                                        min: { value: new Date().toLocaleString(), message: "must be a future value" }
                                     })}
                                 placeholder="auction Ends At"
                             />

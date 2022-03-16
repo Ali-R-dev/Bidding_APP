@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Form, Stack, Button, Radio } from 'react-bootstrap'
 import { Navigate } from 'react-router-dom'
-// import io, { Socket } from 'socket.io-client'
+
 import { useAuth } from '../../Contexts/AuthContext'
 import swal from 'sweetalert'
 
-// const socket = io.connect('http://localhost:3001/')
+
 export default function LoginPage() {
 
 

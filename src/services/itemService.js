@@ -72,17 +72,31 @@ export const DeleteItem = async (itemId, credentials) => {
     return result;
 }
 
+//---- bidding area ---- 
+
 export const BidOnItem = async (itemId, bidAmount, credentials) => {
 
     const { userId, role } = credentials
-    console.log(bidAmount);
     const result = await axios.put(`${baseUrl}/items/bidnow/${itemId}`, { 'bidAmount': bidAmount }, {
         headers: header(userId, role)
     }
     ).then(res => res.data);
     return result;
 }
+export const getBidsByItemId = async (itemId, credentials) => {
 
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/items/bids/${itemId}`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
+    return result;
+}
+// /bids/: id
+
+
+
+// ==============================================================
 export const updateBot = async (botObj, credentials) => {
 
     const { userId, role } = credentials
