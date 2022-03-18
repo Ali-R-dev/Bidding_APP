@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 import { Button, Card, Stack, Table } from 'react-bootstrap'
 import { CountDownTimer } from '../../components/CountDownTimer'
 import { GetItemById, BidOnItem, getBidsByItemId } from '../../services/itemService'
-import io, { Socket } from 'socket.io-client'
+import io from 'socket.io-client'
+
 import { useAuth } from '../../Contexts/AuthContext'
 import { useNavigate } from "react-router-dom";
 
@@ -11,8 +12,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFloppyDisk, faAngleLeft } from '@fortawesome/free-solid-svg-icons'
 
 import swal from 'sweetalert'
-
-const socket = io.connect('http://localhost:3001/')
 
 export default function UserItemPage(props) {
 
@@ -23,6 +22,10 @@ export default function UserItemPage(props) {
     const [CurrentBid, setCurrentBid] = useState({})
     const [isLoading, setIsLoading] = useState(false)
     const [checkBox, setCheckBox] = useState(false)
+
+    const [socket, setSocket] = useState(() => {
+        return io.connect('http://localhost:3001/');
+    });
 
     const { id: itemId } = useParams();
 
@@ -88,6 +91,9 @@ export default function UserItemPage(props) {
         return;
     }
 
+    const updateEventHandler = () => {
+        console.log("Update event called", socket.id);
+    }
 
     useEffect(async () => {
 
@@ -100,12 +106,14 @@ export default function UserItemPage(props) {
 
         setIsLoading(false);
 
-        socket.emit("init_update", ({
-            itemId: itemId
-        }));
-
-
     }, [])
+
+    useEffect(() => {
+        socket.emit('itemPage', itemId)
+        return () => socket.close();
+    }, []);
+
+
 
     return (
         <>

@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }) => {
         return defaultCredentials
     })
 
+
+
     const [headerTitle, setHEaderTitle] = useState('')
 
     useEffect(() => {
@@ -60,7 +62,8 @@ export const AuthProvider = ({ children }) => {
             isAuth,
             logOut,
             setPageTitle,
-            headerTitle
+            headerTitle,
+
         }}>
             {children}
         </AuthContext.Provider>
