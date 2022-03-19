@@ -6,7 +6,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 // import Notification from './Notification'
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket, faGear, faBell } from '@fortawesome/free-solid-svg-icons'
+import { faRightFromBracket, faGear, faUser } from '@fortawesome/free-solid-svg-icons'
 
 const Layout = (props) => {
 
@@ -77,10 +77,13 @@ const Layout = (props) => {
                                     align="end"
                                     title={credentials.userName} id="bg-nested-dropdown">
 
-                                    {/* {credentials.role == 'REG' && <Dropdown.Item eventKey="1" onClick={ShowConfigModal}>
-                                        <span className='span me-2' >Autobidder</span>
-                                        <FontAwesomeIcon icon={faGear} />
-                                    </Dropdown.Item>} */}
+
+                                    <Dropdown.Item eventKey="1"
+                                        onClick={() => navigate("/profile")}
+                                    >
+                                        <span className='span me-2' >Profile</span>
+                                        <FontAwesomeIcon icon={faUser} />
+                                    </Dropdown.Item>
 
                                     <Dropdown.Item
                                         eventKey="2"

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, Form, Stack, Button, Table } from 'react-bootstrap'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../Contexts/AuthContext'
+import { getUserHistory } from '../../services/itemService'
 import swal from 'sweetalert'
 
 
@@ -9,6 +10,19 @@ export default function Profile() {
 
     const { setAuth, isAuth, credentials, setPageTitle } = useAuth();
 
+    const [itemHistory, setItemHistory] = useState([])
+
+    const fetchData = async () => {
+        await getUserHistory(credentials).then(
+            res => setItemHistory(res),
+            rej => console.log(rej)
+        )
+    }
+
+    useEffect(() => {
+        if (credentials.role === 'REG')
+            fetchData()
+    }, [])
     return (
         <>
             <Card className='col-sm m-auto mt-5'>
@@ -24,16 +38,20 @@ export default function Profile() {
                     </div>
                 </Card.Body>
             </Card>
-            {credentials.role == 'REG' && <ItemBiddingHistory />}
+            {credentials.role == 'REG' && <ItemBiddingHistory itemHistory={itemHistory} credentials={credentials} />}
 
 
         </>
     )
 }
 
-const ItemBiddingHistory = () => {
+const ItemBiddingHistory = ({ itemHistory, credentials }) => {
 
-    const [itemHistory, setItemHistory] = useState([])
+    const getstatus = (item) => {
+        if (item.isSoled && String(item.currentBid) == String(credentials.id)) return 'WON'
+        if (item.isSoled && String(item.currentBid) != String(credentials.id)) return 'LOST'
+        return 'IN PROGRESS'
+    }
 
     return (
         <>
@@ -48,14 +66,18 @@ const ItemBiddingHistory = () => {
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
-                                    <th>Current Bid</th>
-                                    <th>Auction Ends At</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                </tr>
+                                {itemHistory?.map((item, index) => {
+                                    return <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.name}</td>
+                                        <td>{getstatus(item)}</td>
+                                    </tr>
+                                })}
+
                             </tbody>
                         </Table>
                     </div>

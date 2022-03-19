@@ -94,7 +94,15 @@ export const getBidsByItemId = async (itemId, credentials) => {
 }
 // /bids/: id
 
+export const getUserHistory = async (credentials) => {
 
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/items/userhistory`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
+    return result;
+}
 
 // ==============================================================
 export const updateBot = async (botObj, credentials) => {

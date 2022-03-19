@@ -79,8 +79,6 @@ export default function UserItemPage(props) {
             (res) => res,
             (rej) => []
         )
-
-
         const current = bids.filter(bid => String(bid._id) === String(item.currentBid))
 
         setBids(prev => bids)
@@ -91,9 +89,7 @@ export default function UserItemPage(props) {
         return;
     }
 
-    const updateEventHandler = () => {
-        console.log("Update event called", socket.id);
-    }
+
 
     useEffect(async () => {
 
@@ -103,16 +99,22 @@ export default function UserItemPage(props) {
 
         setIsLoading(true);
         await fethItem()
-
         setIsLoading(false);
-
     }, [])
 
-    useEffect(() => {
-        socket.emit('itemPage', itemId)
-        return () => socket.close();
-    }, []);
+    const updateData = async () => {
+        await fethItem(itemId)
+    }
 
+    useEffect(() => {
+
+        socket.emit("startLiveUpdates", itemId);
+        socket.on("updatedData", updateData);
+        return () => {
+            socket.emit("StopLiveUpdates", itemId);
+            socket.off("updatedData", updateData);
+        };
+    }, [])
 
 
     return (
