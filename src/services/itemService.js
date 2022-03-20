@@ -129,7 +129,7 @@ export const getBotByUserId = async (credentials) => {
 export const AutoBidToogle = async (itemId, setStatus, credentials) => {
 
     const { userId, role } = credentials
-    const result = await axios.put(`${baseUrl}/user/items/auto/${itemId}`,
+    const result = await axios.put(`${baseUrl}/items/auto/${itemId}`,
         {
             'setStatus': setStatus === true ? 'ACT' : 'DEACT'
         }, {

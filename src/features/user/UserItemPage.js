@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button, Card, Stack, Table } from 'react-bootstrap'
 import { CountDownTimer } from '../../components/CountDownTimer'
-import { GetItemById, BidOnItem, getBidsByItemId } from '../../services/itemService'
+import { GetItemById, BidOnItem, getBidsByItemId, AutoBidToogle } from '../../services/itemService'
 import io from 'socket.io-client'
 
 import { useAuth } from '../../Contexts/AuthContext'
@@ -21,6 +21,8 @@ export default function UserItemPage(props) {
     const [Bids, setBids] = useState([])
     const [CurrentBid, setCurrentBid] = useState({})
     const [isLoading, setIsLoading] = useState(false)
+    const [isBotActive, SetIsBotActive] = useState(false)
+
     const [checkBox, setCheckBox] = useState(false)
 
     const [socket, setSocket] = useState(() => {
@@ -45,9 +47,9 @@ export default function UserItemPage(props) {
 
         // ---bidding---
         await BidOnItem(itemId, newBidAmount, credentials).then(
-            (res) => {
+            async (res) => {
                 swal("Bid performed successfully", { icon: "success" })
-                navigate('/items')
+                await fethItem()
             },
             (rej) => {
                 swal("cannot Perform Bid", {
@@ -63,11 +65,14 @@ export default function UserItemPage(props) {
         if (itemId) {
             const result = await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(
                 (res) => res,
-                (rej) => { }
+                (rej) => { console.log("cant fetch") }
             )
             if (result) {
                 setItem(result)
                 await fetchBids(result);
+                SetIsBotActive(result.botActive)
+                setCheckBox(result.botActive)
+
             }
         }
         return;
@@ -89,7 +94,11 @@ export default function UserItemPage(props) {
         return;
     }
 
+    const handleBotStatus = async () => {
 
+        await AutoBidToogle(itemId, checkBox, credentials)
+        await fethItem()
+    }
 
     useEffect(async () => {
 
@@ -120,7 +129,7 @@ export default function UserItemPage(props) {
     return (
         <>
 
-            <div className='my-4 col-sm-10 mx-auto'>
+            <div className='my-4 col-sm mx-auto'>
 
                 {isLoading &&
                     <div className="d-flex justify-content-center my-4">
@@ -134,52 +143,60 @@ export default function UserItemPage(props) {
 
                 {!isLoading && <Card>
                     <Card.Body>
-
-                        <Card.Title className='align-items-baseline mb-3 me-auto'>
+                        <Card.Title className='align-items-baseline mb-3'>
                             <Stack direction='horizontal' gap={2}>
-                                <h5 className='display-6 me-auto'>{Item?.name}</h5>
+
+                                <Link
+                                    to={{
+                                        pathname: `/items`
+                                    }}
+                                >
+                                    <Button variant='secondary'>
+                                        <FontAwesomeIcon icon={faAngleLeft} />
+                                    </Button>
+                                </Link>
+
+                                <h5 className='display-6 m-auto'>{Item?.name}</h5>
 
                                 {Item?._id && <CountDownTimer EndTime={Item.auctionEndsAt} />
                                 }
                             </Stack>
                         </Card.Title>
 
-                        <div>Bid price :<strong> {CurrentBid.bidPrice || Item.basePrice} </strong> </div>
+                        <div className='h4'>Bid :<strong> {CurrentBid.bidPrice || Item.basePrice} </strong> </div>
 
-                        <div>{Item?.description}</div>
+                        <div className='text-muted'>{Item?.description}</div>
 
-                        <Stack direction='horizontal' gap={1} className="mt-4">
-                            <Link
-                                to={{
-                                    pathname: `/items`
-                                }}
-                            >
-                                <Button variant='secondary'>
-                                    <FontAwesomeIcon icon={faAngleLeft} />
+
+                        <Stack direction='horizontal' gap={1} >
+
+                            <div className='ms-auto'>
+                                <label>Auto bidder</label>
+                                <input
+                                    type='checkbox'
+                                    className='form-check-input'
+                                    aria-label='Auto bidder'
+                                    checked={checkBox}
+                                    onChange={(e) => setCheckBox(e.target.checked)}
+                                />
+                                <Button onClick={handleBotStatus}>
+                                    <FontAwesomeIcon icon={faFloppyDisk} />
                                 </Button>
-                            </Link>
-                            <input
-                                type='checkbox'
-                                className='form-check-input ms-auto'
-                                value={checkBox}
-                                checked={checkBox}
-                                onChange={e => setCheckBox(e.target.checked)} />
-                            <label className=''>Auto bidder</label>
+                            </div>
 
-                            <div className='col-3'>
+                            {!isBotActive && <><div className='col-3'>
                                 <input
                                     type="number"
                                     className="form-control"
                                     ref={bidAmountRef}
-                                    readOnly={checkBox}
                                     placeholder='Your bid'
                                     min={0} />
                             </div>
-                            <Button onClick={handleBidNow}>
-                                <FontAwesomeIcon icon={faFloppyDisk} />
-                            </Button>
-
+                                <Button onClick={handleBidNow}>
+                                    <FontAwesomeIcon icon={faFloppyDisk} />
+                                </Button></>}
                         </Stack>
+
                     </Card.Body>
                 </Card>}
 
