@@ -15,7 +15,7 @@ export default function ItemCard({ _id, name, description, basePrice, auctionEnd
                         </Stack>
                     </Card.Title>
                     <Stack direction='vertical' gap={1}>
-                        <div className='span text-muted'>Bid price : {Math.max(basePrice, 0)}</div>
+                        <div className='span text-muted'>Bid price :<strong> {Math.max(basePrice, (currentBid?.bidPrice || 0))}</strong></div>
                         <div className='span text-muted'>{description}</div>
 
                         {(new Date().getTime() < new Date(auctionEndsAt).getTime()) &&

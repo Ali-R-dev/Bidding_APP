@@ -36,7 +36,8 @@ export default function AdminDashboard() {
                         swal("Success", "Deleted successfully", { icon: "success" });
                         fetchData()
                     }, rej => {
-                        swal("error", "Cannot delete", { icon: "error" });
+                        console.log();
+                        swal("error", (rej?.response?.data?.msg || "Cannot delete"), { icon: "error" });
                     });
                     break;
                 case "cancel":
@@ -122,7 +123,7 @@ export default function AdminDashboard() {
                                 <td>{item?.name || ""}</td>
                                 <td>{item?.description || ""}</td>
                                 <td>{item?.basePrice || ""}</td>
-                                <td>{item?.currentBid || ""}</td>
+                                <td>{item?.currentBid?.bidPrice || ""}</td>
                                 <td>{new Date(item.auctionEndsAt).toLocaleString() || ""}</td>
                                 <td>
                                     <Stack direction='horizontal' gap={1}>

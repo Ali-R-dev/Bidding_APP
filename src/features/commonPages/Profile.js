@@ -40,9 +40,11 @@ export default function Profile() {
     }
 
     const getStatus = (item) => {
-        if (item.isSoled && String(item.currentBid) == String(credentials.id)) return <td className='text-success fw-bold'>{'WON'}</td>
-        if (item.isSoled && String(item.currentBid) != String(credentials.id)) return <td className='text-danger fw-bold'>{'LOST'}</td>
-        return <td className='text-secondary fw-bold'>{'IN PROGRESS...'}</td>
+        if (item.isSoled && String(item.currentBid.userId) == String(credentials.id)) return <td className='text-success fw-bold'>{'WON'}</td>
+        if (item.isSoled && String(item.currentBid.userId) != String(credentials.id)) return <td className='text-danger fw-bold'>{'LOST'}</td>
+        if (!item.isSoled && String(item.currentBid.userId) == String(credentials.id)) return <td className='text-primary fw-bold'>{'IN PROGRESS...You bid is highest'}</td>
+        if (!item.isSoled && String(item.currentBid.userId) != String(credentials.id)) return <td className='text-alert fw-bold'>{'IN PROGRESS...other user has higher bid'}</td>
+        // return <td className='text-secondary fw-bold'>{'IN PROGRESS...'}</td>
     }
 
 

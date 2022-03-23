@@ -64,11 +64,11 @@ export const UpdateItem = async (itemId, item, credentials) => {
 }
 
 export const DeleteItem = async (itemId, credentials) => {
+
     const { userId, role } = credentials
     const result = await axios.delete(`${baseUrl}/${itemId}`, {
         headers: header(userId, role)
-    }
-    ).then(res => res.data);
+    });
     return result;
 }
 
