@@ -4,7 +4,8 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../Contexts/AuthContext'
 import { getUserHistory, getBotByUserId, updateBot } from '../../services/itemService'
 import swal from 'sweetalert'
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilePdf } from '@fortawesome/free-solid-svg-icons'
 
 export default function Profile() {
 
@@ -26,7 +27,9 @@ export default function Profile() {
             rej => console.log(rej)
         )
     }
+    const fetchInvoicePdf = () => {
 
+    }
     const setValue = (e) => {
         SetBot({ ...bot, [e.target.name]: e.target.value })
     }
@@ -120,35 +123,96 @@ export default function Profile() {
                         </Card.Body>
                     </Card>
 
-                    <Card className='col-sm mt-2'>
-                        <Card.Body>
-                            <Card.Title className='align-items-baseline me-auto'>
-                                <h5 className='text-center'>Biddings</h5>
-                            </Card.Title>
-                            <div>
-                                <Table bordered hover size="sm">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Name</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {itemHistory?.map((item, index) => {
-                                            return <tr key={index}>
-                                                <td>{index + 1}</td>
-                                                <td>{item.name}</td>
-                                                {getStatus(item)}
+                    <div className='row m-auto'>
+                        <Card className='col-sm-4'>
+                            <Card.Body>
+                                <Card.Title>
+                                    <h5 className='text-center'>Awards</h5>
+                                </Card.Title>
+                                <div>
+                                    <Table bordered hover>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Item</th>
+                                                <th>Invoice</th>
                                             </tr>
-                                        })}
+                                        </thead>
+                                        <tbody>
 
-                                    </tbody>
-                                </Table>
-                            </div>
+                                            {itemHistory.filter(x => String(x.currentBid.userId) == String(credentials.id)).map((itm, i) => {
+                                                return <tr key={i}>
+                                                    <td>{i + 1}</td>
+                                                    <td>{itm.name}</td>
+                                                    <td>
+                                                        <Button
+                                                            variant='outline-primary'
+                                                            onClick={() => fetchInvoicePdf(itm._id)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faFilePdf} />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            })}
 
-                        </Card.Body>
-                    </Card>
+
+                                        </tbody>
+                                    </Table>
+                                </div>
+
+                            </Card.Body>
+                        </Card>
+
+                        <Card className='col-sm-8'>
+                            <Card.Body>
+                                <Card.Title>
+                                    <h5 className='text-center'>Your Biddings</h5>
+                                </Card.Title>
+                                <div>
+                                    <Table bordered hover>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Status</th>
+                                                <th>History</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {itemHistory?.map((item, index) => {
+                                                return <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{item.name}</td>
+                                                    {getStatus(item)}
+                                                    <Table bordered hover>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Price</th>
+                                                                <th>Time</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {item?.bids?.map((b, i) => {
+                                                                return <tr key={i}>
+                                                                    <td>{b.bidPrice}</td>
+                                                                    <td>{new Date(b.createdAt).toLocaleString()}</td>
+                                                                </tr>
+                                                            })
+                                                            }
+                                                        </tbody>
+                                                    </Table>
+
+                                                </tr>
+                                            })}
+
+                                        </tbody>
+                                    </Table>
+                                </div>
+
+                            </Card.Body>
+                        </Card>
+
+                    </div>
                 </>
             }
         </>
