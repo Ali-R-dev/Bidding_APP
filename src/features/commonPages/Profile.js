@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Card, Form, Stack, Button, Table } from 'react-bootstrap'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useHref } from 'react-router-dom'
 import { useAuth } from '../../Contexts/AuthContext'
-import { getUserHistory, getBotByUserId, updateBot } from '../../services/itemService'
+import { getUserHistory, getBotByUserId, updateBot, getInvoice } from '../../services/itemService'
 import swal from 'sweetalert'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons'
@@ -10,7 +10,7 @@ import { faFilePdf } from '@fortawesome/free-solid-svg-icons'
 export default function Profile() {
 
     const { isAuth, credentials, setPageTitle } = useAuth();
-
+    const InvRef = useRef();
     const [itemHistory, setItemHistory] = useState([])
     const [bot, SetBot] = useState({
         maxBalance: '', notifyAt: ''
@@ -27,7 +27,24 @@ export default function Profile() {
             rej => console.log(rej)
         )
     }
-    const fetchInvoicePdf = () => {
+    const fetchInvoicePdf = async (itemId) => {
+        const inv = await getInvoice(itemId, credentials)
+
+        // ---Enable it to view in new window---
+        // let pdfWindow = window.open("")
+        // pdfWindow.document.write(
+        //     "<iframe width='100%' height='100%' src='data:application/pdf;base64, " +
+        //     encodeURI(inv.base64String) + "'></iframe>"
+        // )
+
+        // ---enable it to direct download---
+        const linkSource = `data:application/pdf;base64,${inv.base64String}`
+        InvRef.current.href = linkSource
+
+        InvRef.current.download = `${inv.invoiceCode}.pdf`
+        InvRef.current.target = "_blank"
+        InvRef.current.click();
+        // window.open("data:application/pdf," + encodeURI(inv.base64String));
 
     }
     const setValue = (e) => {
@@ -57,6 +74,7 @@ export default function Profile() {
     }, [])
     return (
         <>
+            <a ref={InvRef} style={{ visibility: "hidden" }}>invoice</a>
             <Card className='col-sm m-auto mt-5'>
                 <Card.Body>
                     <Card.Title className='align-items-baseline me-auto'>
@@ -184,23 +202,16 @@ export default function Profile() {
                                                     <td>{index + 1}</td>
                                                     <td>{item.name}</td>
                                                     {getStatus(item)}
-                                                    <Table bordered hover>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Price</th>
-                                                                <th>Time</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {item?.bids?.map((b, i) => {
-                                                                return <tr key={i}>
-                                                                    <td>{b.bidPrice}</td>
-                                                                    <td>{new Date(b.createdAt).toLocaleString()}</td>
-                                                                </tr>
-                                                            })
-                                                            }
-                                                        </tbody>
-                                                    </Table>
+
+
+                                                    {/* {item?.bids?.map((b, i) => {
+                                                        return <tr key={i}>
+                                                            <td>{b.bidPrice}</td>
+                                                            <td>{new Date(b.createdAt).toLocaleString()}</td>
+                                                        </tr>
+                                                    })
+                                                    } */}
+
 
                                                 </tr>
                                             })}

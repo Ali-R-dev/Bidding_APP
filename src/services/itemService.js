@@ -104,6 +104,15 @@ export const getUserHistory = async (credentials) => {
     return result;
 }
 
+export const getInvoice = async (ItemId, credentials) => {
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/invoice/${ItemId}`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
+    return result;
+}
+
 // ==============================================================
 export const updateBot = async (botObj, credentials) => {
 
