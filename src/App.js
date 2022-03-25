@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Layout from './components/Layout'
 import LoginPage from './features/login/LoginPage'
+import Profile from "./features/commonPages/Profile";
+
 import AdminDashboard from './features/admin/AdminDashboard'
 import AdminItemPage from './features/admin/AdminItemPage'
 import UserHomePage from './features/user/UserHomePage'
@@ -20,28 +22,34 @@ function App() {
             {/* ---Login route--- */}
             <Route path={"/"} exact={true} element={<LoginPage />} />
 
+            <Route path={"/profile"} exact={true} element={
+              isAuth() ? <Profile /> : <LoginPage />
+            } />
+
             {/* ---regular user routes--- */}
 
             <Route path={"/items/:id"} exact={true} element={
-              isAuth() && credentials.role === "regular" ? <UserItemPage /> : <LoginPage />
+              isAuth() && credentials.role === "REG" ? <UserItemPage /> : <LoginPage />
             } />
 
 
             <Route path={"/items"} exact={true} element={
-              isAuth() && credentials.role === "regular" ? <UserHomePage /> : <LoginPage />
+              isAuth() && credentials.role === "REG" ? <UserHomePage /> : <LoginPage />
             } />
 
             {/* ---admin routes--- */}
 
             <Route path={"/dashboard/:id"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
+              isAuth() && credentials.role === "ADM" ? <AdminItemPage /> : <LoginPage />
             } />
 
             <Route path={"/dashboard"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminDashboard /> : <LoginPage />
+              isAuth() && credentials.role === "ADM" ? <AdminDashboard /> : <LoginPage />
             } />
+
+
             <Route path={"/dashboard/new"} exact={true} element={
-              isAuth() && credentials.role === "admin" ? <AdminItemPage /> : <LoginPage />
+              isAuth() && credentials.role === "ADM" ? <AdminItemPage /> : <LoginPage />
             } />
 
             <Route path={"*"} element={<NotFound />} />

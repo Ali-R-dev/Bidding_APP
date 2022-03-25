@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Form, Stack, Button, Radio } from 'react-bootstrap'
 import { Navigate } from 'react-router-dom'
-import io, { Socket } from 'socket.io-client'
+
 import { useAuth } from '../../Contexts/AuthContext'
 import swal from 'sweetalert'
 
-const socket = io.connect('http://localhost:3001/')
+
 export default function LoginPage() {
 
 
@@ -22,17 +22,17 @@ export default function LoginPage() {
 
 
     const { setAuth, isAuth, credentials, setPageTitle } = useAuth();
-    const [user, setUser] = useState({ id: '', role: '' })
+    const [user, setUser] = useState({ userId: '', role: '' })
 
     useEffect(() => {
         setPageTitle('')
-        socket.on('message', (msg) => {
-            console.log(msg)
-        })
+        // socket.on('message', (msg) => {
+        //     console.log(msg)
+        // })
     }, [])
 
     if (isAuth()) {
-        if (credentials.role === "admin") return (<Navigate to="/dashboard" />)
+        if (credentials.role === "ADM") return (<Navigate to="/dashboard" />)
         return (<Navigate to="/items" />)
     }
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
                             <Form.Group className="sm-4 m-auto" controlId="frmId">
                                 <Form.Label>ID : </Form.Label>
 
-                                <Form.Control required type="password" name='id' onChange={handleSetUser} placeholder="User ID" />
+                                <Form.Control required type="password" name='userId' onChange={handleSetUser} placeholder="User ID" />
                             </Form.Group>
 
                             <Form.Group className="sm-4 m-auto mt-2" >
@@ -79,7 +79,7 @@ export default function LoginPage() {
                                         <Form.Check
                                             inline
                                             id="admin"
-                                            value="admin"
+                                            value="ADM"
                                             onChange={handleSetUser}
                                             type='radio'
                                             name="role" />
@@ -93,7 +93,7 @@ export default function LoginPage() {
                                             required
                                             inline
                                             id="regular"
-                                            value="regular"
+                                            value="REG"
                                             onChange={handleSetUser}
                                             type='radio'
                                             name="role" />

@@ -1,8 +1,18 @@
 import axios from "axios"
 
-const baseUrl = "http://localhost:3001/api"
+const baseUrl = "http://localhost:3001/api/items"
 
-export const GetItems = async ({ id, role }, { page, search }) => {
+const header = (userId, role) => {
+
+    return {
+        'Auth-userid': userId,
+        'Auth-role': role,
+        'Content-Type': 'application/json'
+    }
+
+}
+
+export const GetItems = async ({ userId, role }, { page, search }) => {
 
     let queryStack = []
 
@@ -15,12 +25,8 @@ export const GetItems = async ({ id, role }, { page, search }) => {
         : '';
 
 
-    const result = await axios.get(`${baseUrl}/adm/items/${query}`, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const result = await axios.get(`${baseUrl}${query}`, {
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
@@ -28,27 +34,19 @@ export const GetItems = async ({ id, role }, { page, search }) => {
 }
 
 export const GetItemById = async (itemId, credentials) => {
-    const { id, role } = credentials
+    const { userId, role } = credentials
 
-    const result = await axios.get(`${baseUrl}/adm/items/${itemId}`, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const result = await axios.get(`${baseUrl}/${itemId}`, {
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
     return result;
 }
 export const CreateItem = async (item, credentials) => {
-    const { id, role } = credentials
-    const result = await axios.post(`${baseUrl}/adm/items`, item, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const { userId, role } = credentials
+    const result = await axios.post(`${baseUrl}`, item, {
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
@@ -56,13 +54,9 @@ export const CreateItem = async (item, credentials) => {
 }
 
 export const UpdateItem = async (itemId, item, credentials) => {
-    const { id, role } = credentials
-    const result = await axios.put(`${baseUrl}/adm/items/${itemId}`, item, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const { userId, role } = credentials
+    const result = await axios.put(`${baseUrl}/${itemId}`, item, {
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
@@ -70,59 +64,73 @@ export const UpdateItem = async (itemId, item, credentials) => {
 }
 
 export const DeleteItem = async (itemId, credentials) => {
-    const { id, role } = credentials
-    const result = await axios.delete(`${baseUrl}/adm/items/${itemId}`, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
-    }
-    )
-        .then(res => res.data);
+
+    const { userId, role } = credentials
+    const result = await axios.delete(`${baseUrl}/${itemId}`, {
+        headers: header(userId, role)
+    });
     return result;
 }
+
+//---- bidding area ---- 
 
 export const BidOnItem = async (itemId, bidAmount, credentials) => {
 
-    const { id, role } = credentials
-    console.log(bidAmount);
-    const result = await axios.put(`${baseUrl}/user/items/bidnow/${itemId}`, { 'bidAmount': bidAmount, sample: 'sample' }, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const { userId, role } = credentials
+    const result = await axios.put(`${baseUrl}/bidnow/${itemId}`, { 'bidAmount': bidAmount }, {
+        headers: header(userId, role)
     }
-    )
-        .then(res => res.data);
+    ).then(res => res.data);
+    return result;
+}
+export const getBidsByItemId = async (itemId, credentials) => {
+
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/bids/${itemId}`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
+    return result;
+}
+// /bids/: id
+
+export const getUserHistory = async (credentials) => {
+
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/userhistory`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
     return result;
 }
 
+export const getInvoice = async (ItemId, credentials) => {
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/invoice/${ItemId}`, {
+        headers: header(userId, role)
+    }
+    ).then(res => res.data);
+    return result;
+}
+
+// ==============================================================
 export const updateBot = async (botObj, credentials) => {
 
-    const { id, role } = credentials
-    const result = await axios.put(`${baseUrl}/user/bots`, botObj,
+    const { userId, role } = credentials
+    const result = await axios.put(`${baseUrl}/bot`, botObj,
         {
-            headers: {
-                'Auth-id': id,
-                'Auth-role': role,
-                'Content-Type': 'application/json'
-            }
+            headers: header(userId, role)
         }
     )
         .then(res => res.data);
     return result;
 }
+
 export const getBotByUserId = async (credentials) => {
 
-    const { id, role } = credentials
-    const result = await axios.get(`${baseUrl}/user/bots`, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+    const { userId, role } = credentials
+    const result = await axios.get(`${baseUrl}/bot`, {
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
@@ -130,32 +138,24 @@ export const getBotByUserId = async (credentials) => {
 }
 export const AutoBidToogle = async (itemId, setStatus, credentials) => {
 
-    const { id, role } = credentials
-    const result = await axios.put(`${baseUrl}/user/items/auto/${itemId}`,
+    const { userId, role } = credentials
+    const result = await axios.put(`${baseUrl}/auto/${itemId}`,
         {
             'setStatus': setStatus === true ? 'ACT' : 'DEACT'
         }, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
+        headers: header(userId, role)
     }
     )
         .then(res => res.data);
     return result;
 }
 
-export const getNotifyLimit = async (credentials) => {
+// export const getNotifyLimit = async (credentials) => {
 
-    const { id, role } = credentials
-    const result = await axios.get(`${baseUrl}/user/bots`, {
-        headers: {
-            'Auth-id': id,
-            'Auth-role': role,
-            'Content-Type': 'application/json'
-        }
-    }
-    ).then()
-    return result;
-}
+//     const { userId, role } = credentials
+//     const result = await axios.get(`${baseUrl}/user/bots`, {
+//         headers: header(userId, role)
+//     }
+//     ).then()
+//     return result;
+// }

@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Button, Card, Stack } from 'react-bootstrap'
-import { GetItemById, BidOnItem, AutoBidToogle, getBotByUserId, updateBot } from '../../services/itemService'
+import { Button, Card, Stack, Table } from 'react-bootstrap'
+import { CountDownTimer } from '../../components/CountDownTimer'
+import { GetItemById, BidOnItem, getBidsByItemId, AutoBidToogle } from '../../services/itemService'
+import io from 'socket.io-client'
+
 import { useAuth } from '../../Contexts/AuthContext'
 import { useNavigate } from "react-router-dom";
 
@@ -15,44 +18,38 @@ export default function UserItemPage(props) {
     const navigate = useNavigate();
 
     const [Item, setItem] = useState({})
+    const [Bids, setBids] = useState([])
+    const [CurrentBid, setCurrentBid] = useState({})
+    const [isLoading, setIsLoading] = useState(false)
+    const [isBotActive, SetIsBotActive] = useState(false)
+
     const [checkBox, setCheckBox] = useState(false)
 
+    const [socket, setSocket] = useState(() => {
+        return io.connect('http://localhost:3001/');
+    });
+
     const { id: itemId } = useParams();
+
     const { credentials, setPageTitle } = useAuth();
+
     const bidAmountRef = useRef();
 
     const handleBidNow = async () => {
 
-        if (checkBox == true) {
-            await AutoBidToogle(Item._id, checkBox, credentials).then(
-                (res) => {
-                    swal("Autobidder is On", { icon: "success" })
-                    navigate('/items')
-
-                },
-                (rej) => {
-                    swal("cannot Perform Bid", { icon: "error" })
-                }
-            )
-            return;
-        }
-        // turn off autobidder for this item
-        await AutoBidToogle(Item._id, checkBox, credentials)
-
         const newBidAmount = bidAmountRef?.current?.value
 
         // --- checks before bid---
-        if (Item?.currentBid?.bidderId === credentials.id) return swal("cannot Perform Bid", "you Alrady have highest bid", { icon: "error" })
 
-        if (new Date().toUTCString() > new Date(Item.auctionEndsAt).toUTCString()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
+        if (new Date().getTime() > new Date(Item.auctoniEndsAt).getTime()) return swal("cannot Perform Bid", "Time already elapsed", { icon: "error" })
 
-        if (newBidAmount <= Item?.basePrice || newBidAmount <= Item?.currentBid?.price) return swal("cannot Perform Bid", "Please bid with higher amount", { icon: "error" })
+        if (newBidAmount <= Item?.basePrice || newBidAmount <= 0) return swal("cannot Perform Bid", "Please bid with higher amount", { icon: "error" })
 
         // ---bidding---
         await BidOnItem(itemId, newBidAmount, credentials).then(
-            (res) => {
+            async (res) => {
                 swal("Bid performed successfully", { icon: "success" })
-                navigate('/items')
+                await fethItem()
             },
             (rej) => {
                 swal("cannot Perform Bid", {
@@ -63,87 +60,184 @@ export default function UserItemPage(props) {
         )
     }
 
+    const fethItem = async () => {
+
+        if (itemId) {
+            const result = await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(
+                (res) => res,
+                (rej) => { console.log("cant fetch") }
+            )
+            if (result) {
+                setItem(result)
+                await fetchBids(result);
+                SetIsBotActive(result.botActive)
+                setCheckBox(result.botActive)
+
+            }
+        }
+        return;
+    }
+
+    const fetchBids = async (item) => {
+
+        const bids = await getBidsByItemId(itemId, { userId: credentials.userId, role: credentials.role }).then(
+            (res) => res,
+            (rej) => []
+        )
+        const current = bids.filter(bid => String(bid._id) === String(item.currentBid))
+
+        setBids(prev => bids)
+
+        if (current.length) setCurrentBid(prev => current[0])
+
+
+        return;
+    }
+
+    const handleBotStatus = async () => {
+
+        await AutoBidToogle(itemId, checkBox, credentials)
+        await fethItem()
+    }
+
     useEffect(async () => {
+
+        if (!itemId) navigate('*')
 
         setPageTitle('Item')
 
-        if (itemId) {
-            await GetItemById(itemId, { id: credentials.id, role: credentials.role }).then(res => {
-                const { __v, ...itemObj } = res;
-                setItem(itemObj)
-            },
-                () => navigate('*')
-            );
-            await getBotByUserId(credentials).then(
-                res => {
-                    const status = res.ItemIdsForAutoBid.findIndex((id) => id == itemId)
-                    if (status !== -1) {
-                        setCheckBox(prev => true)
-                    } else {
-                        setCheckBox(prev => false)
-                    }
-                    // const status = Object.values(res.ItemIdsForAutoBid).map(function (key) { return res.ItemIdsForAutoBid[key]; })
-                    // console.log(status);
-                }
-            );
-        }
+        setIsLoading(true);
+        await fethItem()
+        setIsLoading(false);
     }, [])
+
+    const updateData = async () => {
+        await fethItem(itemId)
+    }
+
+    useEffect(() => {
+
+        socket.emit("startLiveUpdates", itemId);
+        socket.on("updatedData", updateData);
+        return () => {
+            socket.emit("StopLiveUpdates", itemId);
+            socket.off("updatedData", updateData);
+        };
+    }, [])
+
+
     return (
         <>
-            <div className='my-4 col-sm-10 mx-auto'>
-                <Card>
+
+            <div className='my-4 col-sm mx-auto'>
+
+                {isLoading &&
+                    <div className="d-flex justify-content-center my-4">
+                        <div className="spinner-border text-primary"
+                            style={{ width: "3rem", height: "3rem" }}
+                            role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+
+                {!isLoading && <Card>
                     <Card.Body>
-                        <Card.Title className='align-items-baseline mb-3 me-auto'>
+                        <Card.Title className='align-items-baseline mb-3'>
                             <Stack direction='horizontal' gap={2}>
 
-                                <h5 className='display-6 me-auto'>{Item?.name}</h5>
-                                <div>{new Date(Item?.auctionEndsAt).toLocaleString()}</div>
+                                <Link
+                                    to={{
+                                        pathname: `/items`
+                                    }}
+                                >
+                                    <Button variant='secondary'>
+                                        <FontAwesomeIcon icon={faAngleLeft} />
+                                    </Button>
+                                </Link>
 
+                                <h5 className='display-6 m-auto'>{Item?.name}</h5>
+
+                                {Item?._id && <CountDownTimer EndTime={Item.auctionEndsAt} />
+                                }
                             </Stack>
-
                         </Card.Title>
 
-                        <div>Bid price :<strong> {
-                            Item?.currentBid?.price > Item?.basePrice ? Item?.currentBid?.price : Item?.basePrice
-                        } </strong> </div>
+                        <div className='h4'>Bid :<strong> {CurrentBid.bidPrice || Item.basePrice} </strong> </div>
 
-                        <div>{Item?.description}</div>
+                        <div className='text-muted'>{Item?.description}</div>
 
-                        <Stack direction='horizontal' gap={1} className="mt-4">
-                            <Link
-                                to={{
-                                    pathname: `/items`
-                                }}
-                            >
-                                <Button variant='secondary'>
-                                    <FontAwesomeIcon icon={faAngleLeft} />
+
+                        <Stack direction='horizontal' gap={1} >
+
+                            <div className='ms-auto'>
+                                <label>Auto bidder</label>
+                                <input
+                                    type='checkbox'
+                                    className='form-check-input'
+                                    aria-label='Auto bidder'
+                                    checked={checkBox}
+                                    onChange={(e) => setCheckBox(e.target.checked)}
+                                />
+                                <Button onClick={handleBotStatus}>
+                                    <FontAwesomeIcon icon={faFloppyDisk} />
                                 </Button>
-                            </Link>
+                            </div>
 
-                            <input
-                                type='checkbox'
-                                className='form-check-input ms-auto'
-                                value={checkBox}
-                                checked={checkBox}
-                                onChange={e => setCheckBox(e.target.checked)} />
-                            <label className=''>Auto bidder</label>
-
-                            <div className='col-3'>
+                            {!isBotActive && <><div className='col-3'>
                                 <input
                                     type="number"
                                     className="form-control"
                                     ref={bidAmountRef}
-                                    readOnly={checkBox}
                                     placeholder='Your bid'
                                     min={0} />
                             </div>
-                            <Button onClick={handleBidNow}>
-                                <FontAwesomeIcon icon={faFloppyDisk} />
-                            </Button>
-
+                                <Button onClick={handleBidNow}>
+                                    <FontAwesomeIcon icon={faFloppyDisk} />
+                                </Button></>}
                         </Stack>
+
                     </Card.Body>
-                </Card>
+                </Card>}
+
+
+                {!isLoading && <Card>
+                    <Card.Body>
+                        <Card.Title className='align-items-baseline mb-3 me-auto'>
+                            <h6 className='text-center'>Bids</h6>
+                        </Card.Title>
+
+                        {/*  */}
+                        <Table bordered hover size="sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Bid</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Bids?.map((bid, index) => {
+                                    // if (String(bid._id) === String(Item.currentBid)) return;
+                                    return (
+                                        <tr key={bid._id} className={bid.userId == credentials.userId ? 'table-primary' : ''}>
+                                            <td>{bid.userId}</td>
+                                            <td>{bid.bidPrice}</td>
+                                            <td>{new Date(bid.createdAt).toLocaleString()}</td>
+                                        </tr>
+                                    )
+
+
+                                })}
+
+                            </tbody>
+                        </Table>
+                        {/*  */}
+
+                    </Card.Body>
+                </Card>}
+
+
             </div>
         </>
     )

@@ -18,29 +18,23 @@ export default function AdminItemPage(props) {
     const { credentials, setPageTitle } = useAuth();
 
     const defaultValue = {
-        currentBid: {
-            price: 0,
-            bidderId: ''
-        },
         name: '',
         description: '',
         auctionEndsAt: new Date().toLocaleString(),
         basePrice: 0,
-        adminId: credentials.id,
+        adminId: ''
     }
 
     const { register, handleSubmit, trigger, reset,
         formState: { isDirty, errors } } = useForm({ defaultValues: defaultValue });
 
     const onSubmit = (itemObj) => {
-        const Data = { ...itemObj, _id: "", adminId: credentials.id }
-        console.log(Data);
+        const Data = { ...itemObj, _id: "", adminId: credentials.userId }
+
         trigger().then(
             (res) => {
 
                 itemId === undefined ? create(itemObj, credentials) : update(itemId, itemObj, credentials);
-
-                navigate('/dashboard')
             },
             (rej) => console.log(rej)
         )
@@ -48,12 +42,24 @@ export default function AdminItemPage(props) {
     }
     const create = (itemObj, credentials) => {
         CreateItem(itemObj, credentials).then(
-            () => swal("Success", "Record Saved Successfully", { icon: "success" })
+            () => {
+                swal("Success", "Record Saved Successfully", { icon: "success" })
+                navigate('/dashboard')
+            },
+            (rej) => {
+                swal("Error", "rej", { icon: "danger" })
+            }
         )
     }
     const update = (itemId, itemObj, credentials) => {
         UpdateItem(itemId, itemObj, credentials).then(
-            () => swal("Success", "Record updated Successfully", { icon: "success" })
+            () => {
+                swal("Success", "Record updated Successfully", { icon: "success" })
+                navigate('/dashboard')
+            },
+            (rej) => {
+                swal("Error", "rej", { icon: "error" })
+            }
         )
 
     }
@@ -62,9 +68,9 @@ export default function AdminItemPage(props) {
     useEffect(async () => {
         setPageTitle('Item Detail')
         if (itemId) {
-            await GetItemById(itemId, { id: credentials.id, role: credentials.role }).then(res => {
-                const { __v, ...itemObj } = res;
-                reset({ ...itemObj, auctionEndsAt: new Date(itemObj.auctionEndsAt).toLocaleString() });
+            await GetItemById(itemId, { userId: credentials.userId, role: credentials.role }).then(res => {
+
+                reset({ ...res, auctionEndsAt: new Date(res.auctionEndsAt).toLocaleString() });
             });
         }
     }, [])
@@ -127,7 +133,7 @@ export default function AdminItemPage(props) {
                                 {...register("basePrice",
                                     {
                                         required: "Field is Required",
-                                        min: { value: 0, message: "value must be greater then 0" }
+                                        min: { value: 1, message: "value must be greater then 0" }
                                     })}
                                 placeholder="base Price"
                             />
@@ -137,6 +143,7 @@ export default function AdminItemPage(props) {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label className="form-label">Auction Ends At: <span className="text-danger">*</span></label>
+
                             <input
                                 className={clsx("form-control", { "is-invalid state-invalid": errors?.auctionEndsAt !== undefined })}
                                 type="datetime"
@@ -147,7 +154,7 @@ export default function AdminItemPage(props) {
 
                                         valueAsDate: true,
                                         required: "Field is Required",
-                                        min: { value: Date.now(), message: "must be a future value" }
+                                        min: { value: new Date().toLocaleString(), message: "must be a future value" }
                                     })}
                                 placeholder="auction Ends At"
                             />
@@ -166,7 +173,7 @@ export default function AdminItemPage(props) {
                                 type="text"
                                 name="price"
                                 readOnly
-                                {...register("currentBid.price")}
+                                {...register("currentBid")}
                             />
                         </div>
                     </div>
@@ -178,7 +185,7 @@ export default function AdminItemPage(props) {
                                 type="text"
                                 name="bidderId"
                                 readOnly
-                                {...register("currentBid.bidderId")}
+                                {...register("currentBid")}
 
                             />
                         </div>

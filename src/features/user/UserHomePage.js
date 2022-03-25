@@ -21,7 +21,7 @@ export default function UserHomePage() {
 
     const fetchData = async (page) => {
         const search = searchRef.current.value.trim();
-        const res = await GetItems({ id: credentials.id, role: credentials.role }, { page, search })
+        const res = await GetItems({ userId: credentials.userId, role: credentials.role }, { page, search })
             .then(
                 res => {
                     SetItems([...res[0]]);
