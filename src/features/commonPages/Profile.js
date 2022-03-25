@@ -203,15 +203,15 @@ export default function Profile() {
                                                     <td>{item.name}</td>
                                                     {getStatus(item)}
 
-
-                                                    {/* {item?.bids?.map((b, i) => {
-                                                        return <tr key={i}>
-                                                            <td>{b.bidPrice}</td>
-                                                            <td>{new Date(b.createdAt).toLocaleString()}</td>
-                                                        </tr>
-                                                    })
-                                                    } */}
-
+                                                    <tr>
+                                                        {item?.bids?.map((b, i) => {
+                                                            return <tr key={i}>
+                                                                <td><strong>{b.bidPrice}</strong>-</td>
+                                                                <td>{new Date(b.createdAt).toLocaleString()}</td>
+                                                            </tr>
+                                                        })
+                                                        }
+                                                    </tr>
 
                                                 </tr>
                                             })}
